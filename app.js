@@ -103,16 +103,40 @@ async function loadSearch() {
 // =========================
 // VIDEO PAGE
 // =========================
-function loadVideo() {
+async function loadVideoPage() {
   const video = JSON.parse(localStorage.getItem("video"));
 
-  const player = document.getElementById("player");
+  if (!video) return;
 
-  if (!video) {
-    player.innerHTML = "<p>No video selected</p>";
-    return;
-  }
+  document.getElementById("title").innerText = video.title;
 
+  // VIDEO PLAYER
+  document.getElementById("player").innerHTML = `
+    <iframe width="100%" height="400"
+      src="https://www.youtube.com/embed/${video.id}?autoplay=1"
+      frameborder="0"
+      allowfullscreen>
+    </iframe>
+  `;
+
+  // INFO CANAL + DETALLES
+  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${video.id}&key=${API_KEY}`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const info = data.items[0];
+
+  const channelId = info.snippet.channelId;
+
+  document.getElementById("desc").innerText = info.snippet.description;
+
+  document.getElementById("likes").innerText =
+    "👍 " + (info.statistics.likeCount || "0");
+
+  loadChannel(channelId);
+  loadComments(video.id);
+}
   saveHistory(video.id, video.title);
 
   player.innerHTML = `
