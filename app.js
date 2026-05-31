@@ -1,56 +1,63 @@
-const API_KEY = "AIzaSyAd5bMmqELGGSTLifNscPTxPyeTaqcV04M";
+const API_KEY = "TU_API_KEY";
+
+const results = document.getElementById("results");
+const player = document.getElementById("player");
+
+window.onload = () => {
+  loadTrending();
+};
 
 // =========================
-// HISTORIAL
+// SEARCH
 // =========================
-function saveHistory(id, title) {
-  let history = JSON.parse(localStorage.getItem("history")) || [];
+async function searchVideos() {
+  const query = document.getElementById("search").value;
 
-  history.unshift({ id, title });
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=12&key=${API_KEY}`;
 
-  localStorage.setItem("history", JSON.stringify(history.slice(0, 30)));
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (!data.items) {
+    results.innerHTML = "<p>Error en búsqueda 😢</p>";
+    console.error(data);
+    return;
+  }
+
+  showVideos(data.items);
 }
 
 // =========================
-// NAVEGACIÓN ENTRE PÁGINAS
+// TRENDING
 // =========================
-function goPage(page) {
-  window.location.href = page;
-}
+async function loadTrending() {
+  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=12&regionCode=MX&key=${API_KEY}`;
 
-function goSearch() {
-  const q = document.getElementById("search").value;
-  localStorage.setItem("lastQuery", q);
-  goPage("search.html");
-}
+  const res = await fetch(url);
+  const data = await res.json();
 
-function goHistory() {
-  goPage("history.html");
-}
+  if (!data.items) {
+    results.innerHTML = "<p>Error cargando videos 😢</p>";
+    console.error(data);
+    return;
+  }
 
-function goHome() {
-  goPage("index.html");
-}
-
-function goPlay(id, title) {
-  localStorage.setItem("video", JSON.stringify({ id, title }));
-  goPage("play.html");
+  showVideos(data.items);
 }
 
 // =========================
-// RENDER DE VIDEOS
+// RENDER VIDEOS (FIXED)
 // =========================
-function render(videos) {
-  const container = document.getElementById("results");
-  container.innerHTML = "";
+function showVideos(videos) {
+  results.innerHTML = "";
 
   videos.forEach(video => {
     const id = video.id.videoId || video.id;
     const title = video.snippet.title;
     const thumb = video.snippet.thumbnails.medium.url;
 
-    container.innerHTML += `
-      <div class="card" onclick="goPlay('${id}', \`${title}\`)">
+    results.innerHTML += `
+      <div class="card" onclick="playVideo('${id}', \`${title}\`)">
         <img src="${thumb}">
         <p>${title}</p>
       </div>
@@ -59,153 +66,51 @@ function render(videos) {
 }
 
 // =========================
-// HOME (TRENDING)
+// HISTORY
 // =========================
-async function loadComments(videoId) {
-  const url = `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=10&key=${API_KEY}`;
-
-  const res = await fetch(url);
-  const data = await res.json();
-
-  const container = document.getElementById("comments");
-  container.innerHTML = "";
-
-  if (!data.items) {
-    container.innerHTML = "<p>No comments</p>";
-    return;
-  }
-
-  data.items.forEach(c => {
-    const comment = c.snippet.topLevelComment.snippet.textDisplay;
-    const author = c.snippet.topLevelComment.snippet.authorDisplayName;
-
-    container.innerHTML += `
-      <div class="comment">
-        <b>${author}</b>
-        <p>${comment}</p>
-      </div>
-    `;
-  });
+function saveHistory(id, title) {
+  let history = JSON.parse(localStorage.getItem("history")) || [];
+  history.unshift({ id, title });
+  localStorage.setItem("history", JSON.stringify(history.slice(0, 30)));
 }
 
-async function loadChannel(channelId) {
-  const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelId}&key=${API_KEY}`;
-
-  const res = await fetch(url);
-  const data = await res.json();
-
-  const ch = data.items[0];
-
-  document.getElementById("channelName").innerText =
-    ch.snippet.title;
-
-  document.getElementById("subs").innerText =
-    "📺 " + ch.statistics.subscriberCount + " subs";
-}
-
-async function loadTrending() {
-  const container = document.getElementById("results");
-
-  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=12&regionCode=MX&key=${API_KEY}`;
-
-  const res = await fetch(url);
-  const data = await res.json();
-
-  if (!data.items) {
-    container.innerHTML = "<p>Error cargando videos 😢</p>";
-    console.error(data);
-    return;
-  }
-
-  render(data.items);
-}
-
-// =========================
-// SEARCH PAGE
-// =========================
-async function loadSearch() {
-  const q = localStorage.getItem("lastQuery");
-
-  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}&type=video&maxResults=12&key=${API_KEY}`;
-
-  const res = await fetch(url);
-  const data = await res.json();
-
-  const container = document.getElementById("results");
-
-  if (!data.items) {
-    container.innerHTML = "<p>Error en búsqueda 😢</p>";
-    console.error(data);
-    return;
-  }
-
-  render(data.items);
-}
-
-// =========================
-// VIDEO PAGE
-// =========================
-async function loadVideoPage() {
-  const video = JSON.parse(localStorage.getItem("video"));
-
-  if (!video) return;
-
-  document.getElementById("title").innerText = video.title;
-
-  // VIDEO PLAYER
-  document.getElementById("player").innerHTML = `
-    <iframe width="100%" height="400"
-      src="https://www.youtube.com/embed/${video.id}?autoplay=1"
-      frameborder="0"
-      allowfullscreen>
-    </iframe>
-  `;
-
-  // INFO CANAL + DETALLES
-  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${video.id}&key=${API_KEY}`;
-
-  const res = await fetch(url);
-  const data = await res.json();
-
-  const info = data.items[0];
-
-  const channelId = info.snippet.channelId;
-
-  document.getElementById("desc").innerText = info.snippet.description;
-
-  document.getElementById("likes").innerText =
-    "👍 " + (info.statistics.likeCount || "0");
-
-  loadChannel(channelId);
-  loadComments(video.id);
-}
-  saveHistory(video.id, video.title);
-
-  player.innerHTML = `
-    <h2>${video.title}</h2>
-
-    <iframe width="100%" height="400"
-      src="https://www.youtube.com/embed/${video.id}?autoplay=1"
-      frameborder="0"
-      allowfullscreen>
-    </iframe>
-  `;
-}
-
-// =========================
-// HISTORY PAGE
-// =========================
-function loadHistory() {
+function showHistory() {
   const history = JSON.parse(localStorage.getItem("history")) || [];
 
-  const container = document.getElementById("results");
-  container.innerHTML = "";
+  results.innerHTML = "<h2>Historial</h2>";
 
   history.forEach(v => {
-    container.innerHTML += `
-      <div class="card" onclick="goPlay('${v.id}', \`${v.title}\`)">
+    results.innerHTML += `
+      <div class="card" onclick="playVideo('${v.id}', \`${v.title}\`)">
         <p>${v.title}</p>
       </div>
     `;
   });
+}
+
+// =========================
+// PLAYER
+// =========================
+function playVideo(id, title) {
+  saveHistory(id, title);
+
+  player.innerHTML = `
+    <div class="modal" onclick="closePlayer(event)">
+      <div class="modal-content">
+        <iframe
+          width="100%"
+          height="400"
+          src="https://www.youtube.com/embed/${id}?autoplay=1"
+          frameborder="0"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+  `;
+}
+
+function closePlayer(e) {
+  if (e.target.classList.contains("modal")) {
+    player.innerHTML = "";
+  }
 }
