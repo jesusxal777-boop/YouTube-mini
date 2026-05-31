@@ -61,6 +61,48 @@ function render(videos) {
 // =========================
 // HOME (TRENDING)
 // =========================
+async function loadComments(videoId) {
+  const url = `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=10&key=${API_KEY}`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const container = document.getElementById("comments");
+  container.innerHTML = "";
+
+  if (!data.items) {
+    container.innerHTML = "<p>No comments</p>";
+    return;
+  }
+
+  data.items.forEach(c => {
+    const comment = c.snippet.topLevelComment.snippet.textDisplay;
+    const author = c.snippet.topLevelComment.snippet.authorDisplayName;
+
+    container.innerHTML += `
+      <div class="comment">
+        <b>${author}</b>
+        <p>${comment}</p>
+      </div>
+    `;
+  });
+}
+
+async function loadChannel(channelId) {
+  const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelId}&key=${API_KEY}`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const ch = data.items[0];
+
+  document.getElementById("channelName").innerText =
+    ch.snippet.title;
+
+  document.getElementById("subs").innerText =
+    "📺 " + ch.statistics.subscriberCount + " subs";
+}
+
 async function loadTrending() {
   const container = document.getElementById("results");
 
