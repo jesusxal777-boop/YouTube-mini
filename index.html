@@ -1,24 +1,10 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>DreamTube</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+<h1>🎥 DreamTube</h1>
 
-  <h1>🎥 DreamTube</h1>
+<input id="search" placeholder="Buscar...">
+<button onclick="goSearch()">Buscar</button>
+<button onclick="goHistory()">Historial</button>
 
-  <div class="topbar">
-    <input id="search" placeholder="Buscar videos...">
-    <button onclick="searchVideos()">Buscar</button>
-    <button onclick="loadTrending()">Inicio</button>
-<button onclick="showHistory()">Historial</button>
-  </div>
+<div id="results"></div>
 
-  <div id="player"></div>
-  <div id="results"></div>
-
-  <script src="app.js"></script>
-</body>
-</html>
+<script src="app.js"></script>
+<script>loadTrending()</script>
