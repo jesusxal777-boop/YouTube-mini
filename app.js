@@ -41,13 +41,26 @@ function showVideos(videos) {
   });
 }
 
-// ▶️ Reproducir video
 function playVideo(id) {
+  const player = document.getElementById("player");
+
   player.innerHTML = `
-    <iframe width="80%" height="400"
-      src="https://www.youtube.com/embed/${id}"
-      frameborder="0"
-      allowfullscreen>
-    </iframe>
+    <div class="modal" onclick="closePlayer(event)">
+      <div class="modal-content">
+        <iframe
+          width="100%"
+          height="400"
+          src="https://www.youtube.com/embed/${id}?autoplay=1"
+          frameborder="0"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </div>
   `;
+}
+
+function closePlayer(e) {
+  if (e.target.classList.contains("modal")) {
+    document.getElementById("player").innerHTML = "";
+  }
 }
