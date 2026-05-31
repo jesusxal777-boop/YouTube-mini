@@ -2,20 +2,38 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Reproductor</title>
+  <title>DreamTube - Play</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <button onclick="window.location.href='index.html'">⬅ Back</button>
+  <button onclick="go('index.html')">⬅ Back</button>
 
   <div id="player"></div>
 
+  <div class="info">
+    <h2 id="title"></h2>
+
+    <div class="stats">
+      <span id="likes">👍 --</span>
+      <span id="subs">📺 -- subs</span>
+    </div>
+
+    <p id="desc"></p>
+
+    <div class="channel">
+      <h3 id="channelName"></h3>
+    </div>
+  </div>
+
+  <hr>
+
+  <h3>💬 Comentarios</h3>
+  <div id="comments"></div>
+
   <script src="app.js"></script>
-  <script>
-    loadVideo();
-  </script>
+  <script>loadVideoPage()</script>
 
 </body>
 </html>
