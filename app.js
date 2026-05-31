@@ -1,4 +1,4 @@
-const API_KEY = "TU_API_KEY_AQUI";
+const API_KEY = "AIzaSyAd5bMmqELGGSTLifNscPTxPyeTaqcV04M";
 
 const results = document.getElementById("results");
 const player = document.getElementById("player");
